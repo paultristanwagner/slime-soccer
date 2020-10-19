@@ -3,6 +3,3 @@ main: me.paultristanwagner.slimesoccer.SlimeSoccerPlugin
 version: 1.0
 api-version: 1.16
 author: LetsPeee
-
-commands:
-  ball:

@@ -1,7 +1,10 @@
 package me.paultristanwagner.slimesoccer.arena;
 
 import me.paultristanwagner.slimesoccer.SlimeSoccerPlugin;
+import me.paultristanwagner.slimesoccer.effect.SimpleFireworkEffect;
 import me.paultristanwagner.slimesoccer.entity.SoccerBall;
+import me.paultristanwagner.slimesoccer.game.TeamColor;
+import me.paultristanwagner.slimesoccer.i18n.I18n;
 import org.bukkit.*;
 import org.bukkit.entity.Entity;
 import org.bukkit.util.Vector;
@@ -11,8 +14,15 @@ import java.util.Objects;
 
 public class Arena {
     
+    private static Arena instance;
+    
     private final Location position1;
     private final Location position2;
+    private final Location redLocation;
+    private final Location blueLocation;
+    
+    private final Goal redGoal;
+    private final Goal blueGoal;
     
     private Location middle;
     
@@ -24,9 +34,16 @@ public class Arena {
     private int minZ;
     private int maxZ;
     
-    public Arena( @NotNull Location position1, @NotNull Location position2 ) {
+    private Arena( @NotNull Location position1, @NotNull Location position2,
+                   @NotNull Location redLocation, @NotNull Location blueLocation,
+                   @NotNull Location redGoalPosition1, @NotNull Location redGoalPosition2,
+                   @NotNull Location blueGoalPosition1, @NotNull Location blueGoalPosition2 ) {
         this.position1 = position1;
         this.position2 = position2;
+        this.redLocation = redLocation;
+        this.blueLocation = blueLocation;
+        this.redGoal = new Goal( redGoalPosition1, redGoalPosition2 );
+        this.blueGoal = new Goal( blueGoalPosition1, blueGoalPosition2 );
         
         calculateBorders();
         spawnBall();
@@ -58,14 +75,39 @@ public class Arena {
     }
     
     private void startTicking() {
-        Bukkit.getScheduler().runTaskTimer( SlimeSoccerPlugin.getInstance(), this::tick, 1, 1 );
+        Bukkit.getScheduler().runTaskTimer( SlimeSoccerPlugin.getInstance(), this::tickBall, 1, 1 );
     }
     
-    private void tick() {
+    private void tickBall() {
+        if ( !hasBall() ) {
+            return;
+        }
+        
         double baseRepelSpeed = 0.3;
         
-        Entity ballEntity = ball.getBukkitEntity();
+        Entity ballEntity = getBallEntity();
         Location ballLocation = ballEntity.getLocation();
+        
+        boolean goal = false;
+        if ( redGoal.isInside( ballLocation ) ) {
+            goal = true;
+            SimpleFireworkEffect.spawn( ballLocation, TeamColor.BLUE );
+            I18n.broadcastMessage( "blue_scored" );
+        } else if ( blueGoal.isInside( ballLocation ) ) {
+            goal = true;
+            SimpleFireworkEffect.spawn( ballLocation, TeamColor.RED );
+            I18n.broadcastMessage( "red_scored" );
+        }
+        
+        if ( goal ) {
+            ballEntity.remove();
+            ball = null;
+            
+            Bukkit.getScheduler().runTaskLater( SlimeSoccerPlugin.getInstance(), this::spawnBall, 4 * 20L );
+            return;
+        }
+        
+        
         Vector vector = ballEntity.getVelocity();
         
         boolean update = false;
@@ -97,11 +139,51 @@ public class Arena {
             Objects.requireNonNull( world );
             
             world.spawnParticle( Particle.DRAGON_BREATH, ballLocation, 30, 0.2, 0.2, 0.2, 0.1 );
-            world.playSound( ballLocation, Sound.ENTITY_ENDER_DRAGON_FLAP, 0.75f, 2 );
+            world.playSound( ballLocation, Sound.UI_BUTTON_CLICK, 0.75f, 2 );
         }
     }
     
     public void unregister() {
-        ball.killEntity();
+        if ( ball != null ) {
+            ball.killEntity();
+        }
+    }
+    
+    public boolean hasBall() {
+        return ball != null;
+    }
+    
+    public Entity getBallEntity() {
+        if ( hasBall() ) {
+            return ball.getBukkitEntity();
+        } else {
+            throw new IllegalStateException( "The arena does not have a ball!" );
+        }
+    }
+    
+    public Location getRedLocation() {
+        return redLocation;
+    }
+    
+    public Location getBlueLocation() {
+        return blueLocation;
+    }
+    
+    public static synchronized Arena instantiate( @NotNull Location position1, @NotNull Location position2,
+                                                  @NotNull Location redLocation, @NotNull Location blueLocation,
+                                                  @NotNull Location goal1Position1, @NotNull Location goal1Position2,
+                                                  @NotNull Location goal2Position1, @NotNull Location goal2Position2 ) {
+        if ( instance != null ) {
+            throw new IllegalStateException( "Arena should only be instantiated once!" );
+        }
+        
+        return instance = new Arena( position1, position2, redLocation, blueLocation, goal1Position1, goal1Position2, goal2Position1, goal2Position2 );
+    }
+    
+    public static synchronized Arena getInstance() {
+        if ( instance == null ) {
+            throw new IllegalStateException( "Instance should not be accessed before getting instantiated!" );
+        }
+        return instance;
     }
 }
