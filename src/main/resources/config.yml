@@ -1,0 +1,61 @@
+arena:
+  pos1:
+    ==: org.bukkit.Location
+    world: world
+    x: -73.0
+    y: 90.0
+    z: -180.0
+  pos2:
+    ==: org.bukkit.Location
+    world: world
+    x: -40.0
+    y: 100.0
+    z: -203.0
+
+  red-spawn:
+    ==: org.bukkit.Location
+    world: world
+    x: -44.5
+    y: 91.0
+    z: -191.5
+    yaw: 90.0
+    pitch: 0.0
+
+  blue-spawn:
+    ==: org.bukkit.Location
+    world: world
+    x: -68.5
+    y: 91.0
+    z: -191.5
+    yaw: -90.0
+    pitch: 0.0
+
+  red-goal:
+    ==: me.paultristanwagner.slimesoccer.arena.Goal
+    pos1:
+      ==: org.bukkit.Location
+      world: world
+      x: -40.0
+      y: 91.0
+      z: -188.0
+    pos2:
+      ==: org.bukkit.Location
+      world: world
+      x: -39.0
+      y: 95.0
+      z: -195.0
+
+  blue-goal:
+    ==: me.paultristanwagner.slimesoccer.arena.Goal
+    pos1:
+      ==: org.bukkit.Location
+      world: world
+      x: -73.0
+      y: 91.0
+      z: -188.0
+    pos2:
+      ==: org.bukkit.Location
+      world: world
+      x: -74.0
+      y: 95.0
+      z: -195.0

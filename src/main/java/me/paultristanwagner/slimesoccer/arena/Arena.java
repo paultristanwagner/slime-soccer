@@ -36,14 +36,13 @@ public class Arena {
     
     private Arena( @NotNull Location position1, @NotNull Location position2,
                    @NotNull Location redLocation, @NotNull Location blueLocation,
-                   @NotNull Location redGoalPosition1, @NotNull Location redGoalPosition2,
-                   @NotNull Location blueGoalPosition1, @NotNull Location blueGoalPosition2 ) {
+                   @NotNull Goal redGoal, @NotNull Goal blueGoal ) {
         this.position1 = position1;
         this.position2 = position2;
         this.redLocation = redLocation;
         this.blueLocation = blueLocation;
-        this.redGoal = new Goal( redGoalPosition1, redGoalPosition2 );
-        this.blueGoal = new Goal( blueGoalPosition1, blueGoalPosition2 );
+        this.redGoal = redGoal;
+        this.blueGoal = blueGoal;
         
         calculateBorders();
         spawnBall();
@@ -171,13 +170,12 @@ public class Arena {
     
     public static synchronized Arena instantiate( @NotNull Location position1, @NotNull Location position2,
                                                   @NotNull Location redLocation, @NotNull Location blueLocation,
-                                                  @NotNull Location goal1Position1, @NotNull Location goal1Position2,
-                                                  @NotNull Location goal2Position1, @NotNull Location goal2Position2 ) {
+                                                  @NotNull Goal redGoal, @NotNull Goal blueGoal ) {
         if ( instance != null ) {
             throw new IllegalStateException( "Arena should only be instantiated once!" );
         }
         
-        return instance = new Arena( position1, position2, redLocation, blueLocation, goal1Position1, goal1Position2, goal2Position1, goal2Position2 );
+        return instance = new Arena( position1, position2, redLocation, blueLocation, redGoal, blueGoal );
     }
     
     public static synchronized Arena getInstance() {
